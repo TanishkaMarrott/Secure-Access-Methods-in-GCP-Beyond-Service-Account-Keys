@@ -1,23 +1,19 @@
-
 import google.auth
 from google.auth.transport.requests import Request
-from google.oauth2 import service_account
+import subprocess
 
-def impersonate_sa(target_sa_email):
-    source_credentials, _ = google.auth.default(scopes=['https://www.googleapis.com/auth/cloud-platform'])
-    
-    target_credentials = service_account.Credentials.from_service_account_info(
-        {
-            "type": "service_account",
-            "client_email": target_sa_email,
-            "private_key_id": source_credentials.token,
-            "private_key": source_credentials.token,
-        }
-    )
+def get_access_token(target_sa_email):
+    # Ensure gcloud CLI is authenticated
+    subprocess.run(["gcloud", "auth", "application-default", "login"])
 
-    return target_credentials
+    # Generate access token for the target service account
+    access_token = subprocess.run(
+        ["gcloud", "auth", "print-access-token", target_sa_email],
+        capture_output=True, text=True).stdout.strip()
+
+    return access_token
 
 if __name__ == "__main__":
     target_sa_email = "target-sa@example.iam.gserviceaccount.com"
-    creds = impersonate_sa(target_sa_email)
-    print("Impersonation successful:", creds)
+    token = get_access_token(target_sa_email)
+    print("Access token:", token)
