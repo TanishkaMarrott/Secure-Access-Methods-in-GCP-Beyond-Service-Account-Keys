@@ -29,6 +29,7 @@ Service Account Impersonation allows a user to temporarily assume the permission
 #### Code Snippet
 
 1. **Authenticate and Configure gcloud**:
+
    Make sure your gcloud CLI is authenticated and configured with the required IAM roles.
    ```bash
    gcloud auth login
@@ -36,6 +37,7 @@ Service Account Impersonation allows a user to temporarily assume the permission
    ```
 
 2. **Grant the `serviceAccountTokenCreator` Role**:
+
    Ensure the user or service account has the `roles/iam.serviceAccountTokenCreator` role for the target service account.
    ```bash
    gcloud iam service-accounts add-iam-policy-binding [TARGET_SA_EMAIL] \
@@ -44,6 +46,7 @@ Service Account Impersonation allows a user to temporarily assume the permission
    ```
 
 3. **Generate Access Token Using gcloud**:
+
    Use the following command to generate an access token for the target service account.
    ```bash
    ACCESS_TOKEN=$(gcloud auth print-access-token [TARGET_SA_EMAIL])
@@ -51,6 +54,7 @@ Service Account Impersonation allows a user to temporarily assume the permission
    ```
 
 4. **Use the Access Token**:
+
    Use the generated access token to authenticate API requests.
    ```bash
    curl -H "Authorization: Bearer $ACCESS_TOKEN" \
