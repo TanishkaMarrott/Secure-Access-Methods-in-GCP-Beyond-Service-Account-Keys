@@ -1,4 +1,4 @@
-# Secure Alternatives to Service Account Keys in GCP
+# Secure Access Methods in GCP: Beyond Service Account Keys
 
 ## Introduction
 
@@ -22,11 +22,11 @@ Secure-Alternatives-to-Service-Account-Keys-in-GCP/
 
 ## Methods
 
-### Service Account Impersonation with `gcloud auth print-access-token`
+## Service Account Impersonation with `gcloud auth print-access-token`
 
 Service Account Impersonation allows a user to temporarily assume the permissions of that Service Account. This method avoids the need for long-lived keys by using short-lived access tokens.
 
-#### Code Snippet
+### Code Snippet
 
 1. **Authenticate and Configure gcloud**:
 
@@ -65,11 +65,11 @@ Using Service Account Impersonation with `gcloud auth print-access-token` provid
 
 ---
 
-### 2. Generating Short-Lived Tokens
+## 2. Generating Short-Lived Tokens
 
 Short-lived tokens provide temporary access and reduce the risk of credential leakage. This creates cre
 
-#### Code Snippet
+### Code Snippet
 
 ```python
 from google.oauth2 import service_account
@@ -83,9 +83,7 @@ access_token = source_credentials.get_access_token().token
 print("Access Token:", access_token)
 ```
 
-### 3. Workload Identity Federation
-
-## What is Workload Identity Federation?
+## 2. Workload Identity Federation
 
 Workload Identity Federation allows GCP to trust identities from external identity providers (IdPs) like AWS, Azure, or on-premises systems. This means you can use external identities to authenticate to GCP services without managing long-lived SA keys.
 
