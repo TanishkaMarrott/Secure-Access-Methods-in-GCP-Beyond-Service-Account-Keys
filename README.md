@@ -85,23 +85,107 @@ print("Access Token:", access_token)
 
 ### 3. Workload Identity Federation
 
-Workload Identity Federation allows external identities (like AWS IAM roles) to impersonate GCP Service Accounts, eliminating the need for keys.
+## What is Workload Identity Federation?
 
-#### Code Snippet
+Workload Identity Federation allows GCP to trust identities from external identity providers (IdPs) like AWS, Azure, or on-premises systems. This means you can use external identities to authenticate to GCP services without managing long-lived SA keys.
 
-```python
-from google.auth import identity_pool
 
-# Setup Workload Identity Federation
-aws_credentials = {
-    'aws': {
-        'role_arn': 'arn:aws:iam::account-id:role/role-name',
-        'web_identity_token_file': '/path/to/token'
-    }
-}
+## How It Works
 
-federated_credentials = identity_pool.Credentials.from_info(aws_credentials)
+Simple workflow to illustrate the process:
+
+1. The user or application uses an external identity from a trusted IdP (e.g., AWS IAM role).
+2. GCP validates the external identity through Workload Identity Federation.
+3. A short-lived token is generated for the GCP Service Account.
+4. The token is used to access GCP resources securely.
+
+### Workflow Diagram
+
+```mermaid
+graph LR
+  A[AWS IAM Role] -->|Assume Role| B[STS Generates Token]
+  B -->|Send Token| C[GCP Workload Identity Federation]
+  C -->|Validate Token| D[Generate Short-Lived Token]
+  D --> E[GCP Resources Access]
 ```
+
+## Setting Up Workload Identity Federation
+
+Let's set up WIF using AWS as the external IdP:
+
+### Step 1: Configure AWS IAM Role
+
+**Create IAM Role**: Create an IAM role in AWS with the necessary permissions.
+
+**Trust Relationship**: Set up the trust relationship to allow GCP to assume the role.
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Federated": "accounts.google.com"
+      },
+      "Action": "sts:AssumeRoleWithWebIdentity"
+    }
+  ]
+}
+```
+
+### Step 2: Set Up Workload Identity Pool in GCP
+
+**Create Identity Pool**: Create a Workload Identity Pool in GCP.
+```sh
+gcloud iam workload-identity-pools create "my-pool" \
+  --project="my-project" \
+  --location="global" \
+  --display-name="My Pool"
+```
+
+**Create Provider**: Create a Workload Identity Provider within the pool.
+```sh
+gcloud iam workload-identity-pools providers create-aws "my-provider" \
+  --location="global" \
+  --workload-identity-pool="my-pool" \
+  --account-id="aws-account-id" \
+  --region="us-west-2"
+```
+
+### Step 3: Grant IAM Permissions
+
+**Bind IAM Policy**: Bind the GCP Service Account to the Workload Identity Pool.
+```sh
+gcloud iam service-accounts add-iam-policy-binding "my-service-account@my-project.iam.gserviceaccount.com" \
+  --role="roles/iam.workloadIdentityUser" \
+  --member="principal://iam.googleapis.com/projects/my-project/locations/global/workloadIdentityPools/my-pool/subject/aws-role-arn"
+```
+
+### Step 4: Authenticate Using AWS Role
+
+**Assume Role**: Assume the IAM role in AWS and obtain the token.
+
+**Exchange Token**: Exchange the token for a GCP access token.
+```python
+import google.auth
+from google.auth import impersonated_credentials
+from google.auth.transport.requests import Request
+from subprocess import check_output
+
+def get_impersonated_access_token(target_sa_email):
+    # Command to generate the impersonated access token
+    command = [
+        "gcloud", "auth", "print-access-token", f"--impersonate-service-account={target_sa_email}"
+    ]
+    access_token = check_output(command).strip().decode("utf-8")
+    return access_token
+
+if __name__ == "__main__":
+    target_sa_email = "target-sa@example.iam.gserviceaccount.com"
+    token = get_impersonated_access_token(target_sa_email)
+    print("Impersonated Access Token:", token)
+```
+
 
 ## Conclusion
 
