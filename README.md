@@ -82,7 +82,7 @@ access_token = source_credentials.get_access_token().token
 print("Access Token:", access_token)
 ```
 
-## 2. Workload Identity Federation
+## 3. Workload Identity Federation
 
 Workload Identity Federation allows GCP to trust identities from external identity providers (IdPs) like AWS, Azure, or on-premises systems. This means you can use external identities to authenticate to GCP services without managing long-lived SA keys.
 
