@@ -20,13 +20,12 @@ Secure-Alternatives-to-Service-Account-Keys-in-GCP/
     └───workload_identity_setup.py
 ```
 
-## Methods
 
-## Service Account Impersonation with `gcloud auth print-access-token`
+## 1. Service Account Impersonation with _gcloud auth print-access-token_
 
 Service Account Impersonation allows a user to temporarily assume the permissions of that Service Account. This method avoids the need for long-lived keys by using short-lived access tokens.
 
-### Code Snippet
+Procedure:-
 
 1. **Authenticate and Configure gcloud**:
 
@@ -87,7 +86,6 @@ print("Access Token:", access_token)
 
 Workload Identity Federation allows GCP to trust identities from external identity providers (IdPs) like AWS, Azure, or on-premises systems. This means you can use external identities to authenticate to GCP services without managing long-lived SA keys.
 
-
 ## How It Works
 
 Simple workflow to illustrate the process:
@@ -111,7 +109,7 @@ graph LR
 
 Let's set up WIF using AWS as the external IdP:
 
-### Step 1: Configure AWS IAM Role
+### Step 1 --> Configure AWS IAM Role
 
 **Create IAM Role**: Create an IAM role in AWS with the necessary permissions.
 
