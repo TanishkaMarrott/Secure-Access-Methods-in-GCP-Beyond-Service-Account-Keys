@@ -2,7 +2,7 @@
 
 ## Introduction
 
-Welcome to my project on secure alternatives to using long-lived Service Account keys in GCP! This repository showcases three secure methods to access GCP resources without relying on static Service Account keys.
+Service Account Keys aren't secure. Here are the three ways I'd recommend as alternatives.--> to access GCP resources/ perform operations without relying on static Service Account keys.
 
 ## Directory Structure
 
@@ -22,34 +22,48 @@ Secure-Alternatives-to-Service-Account-Keys-in-GCP/
 
 ## Methods
 
-### 1. Service Account Impersonation
+### Service Account Impersonation with `gcloud auth print-access-token`
 
-Impersonating a Service Account allows a user to temporarily assume the permissions of that Service Account. This method avoids the need for long-lived keys.
+Service Account Impersonation allows a user to temporarily assume the permissions of that Service Account. This method avoids the need for long-lived keys by using short-lived access tokens.
 
 #### Code Snippet
 
-```python
-from google.oauth2 import service_account
-from google.auth.transport.requests import Request
-from google.auth import impersonated_credentials
+1. **Authenticate and Configure gcloud**:
+   Make sure your gcloud CLI is authenticated and configured with the required IAM roles.
+   ```bash
+   gcloud auth login
+   gcloud config set project [PROJECT_ID]
+   ```
 
-# Source credentials (IAM user or Service Account with required roles)
-source_credentials = service_account.Credentials.from_service_account_file('path/to/source/key.json')
+2. **Grant the `serviceAccountTokenCreator` Role**:
+   Ensure the user or service account has the `roles/iam.serviceAccountTokenCreator` role for the target service account.
+   ```bash
+   gcloud iam service-accounts add-iam-policy-binding [TARGET_SA_EMAIL] \
+       --member="user:[YOUR_USER_EMAIL]" \
+       --role="roles/iam.serviceAccountTokenCreator"
+   ```
 
-# Target service account to impersonate
-target_credentials = impersonated_credentials.Credentials(
-    source_credentials=source_credentials,
-    target_principal='target-service-account@your-project.iam.gserviceaccount.com',
-    target_scopes=['https://www.googleapis.com/auth/cloud-platform']
-)
+3. **Generate Access Token Using gcloud**:
+   Use the following command to generate an access token for the target service account.
+   ```bash
+   ACCESS_TOKEN=$(gcloud auth print-access-token [TARGET_SA_EMAIL])
+   echo $ACCESS_TOKEN
+   ```
 
-# Use the target credentials
-target_credentials.refresh(Request())
-```
+4. **Use the Access Token**:
+   Use the generated access token to authenticate API requests.
+   ```bash
+   curl -H "Authorization: Bearer $ACCESS_TOKEN" \
+        https://www.googleapis.com/auth/cloud-platform
+   ```
+
+Using Service Account Impersonation with `gcloud auth print-access-token` provides a secure way to access GCP resources without long-lived keys. This ensures better security and compliance.
+
+---
 
 ### 2. Generating Short-Lived Tokens
 
-Short-lived tokens provide temporary access and reduce the risk of credential leakage.
+Short-lived tokens provide temporary access and reduce the risk of credential leakage. This creates cre
 
 #### Code Snippet
 
